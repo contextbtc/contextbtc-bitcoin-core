@@ -109,7 +109,7 @@ impl BitcoinRpcNostrServer {
 
     #[tool(
         name = "getnetworkinfo",
-        description = "Get network state (version, connections, relay fee, ...)"
+        description = "Get network state (version, relay fee, ...); node addresses, proxies, user agent and peer counts are redacted"
     )]
     async fn get_network_info(&self) -> Result<CallToolResult, ErrorData> {
         let result = self
@@ -119,7 +119,7 @@ impl BitcoinRpcNostrServer {
             .map_err(RpcCallError::into_error_data)?;
 
         Ok(CallToolResult::success(vec![Content::text(
-            result.to_string(),
+            redact_network_info(result).to_string(),
         )]))
     }
 
@@ -323,6 +323,53 @@ fn normalize_tool_name(name: &str) -> String {
         .collect()
 }
 
+/// Strip host-identifying data from a `getnetworkinfo` response.
+///
+/// The server is only reachable over Nostr, so exposing the node's public /
+/// onion addresses, proxy endpoints, user agent or peer counts would
+/// deanonymize the host.
+/// Values are blanked rather than removed so the response keeps the shape
+/// Bitcoin Core clients expect (e.g. `GetNetworkInfoResult`).
+fn redact_network_info(mut info: Value) -> Value {
+    let Some(map) = info.as_object_mut() else {
+        return info;
+    };
+
+    if let Some(addrs) = map.get_mut("localaddresses") {
+        *addrs = json!([]);
+    }
+
+    if let Some(Value::Array(networks)) = map.get_mut("networks") {
+        for network in networks.iter_mut().filter_map(Value::as_object_mut) {
+            if let Some(proxy) = network.get_mut("proxy") {
+                *proxy = json!("");
+            }
+            if let Some(randomize) = network.get_mut("proxy_randomize_credentials") {
+                *randomize = json!(false);
+            }
+        }
+    }
+
+    for key in [
+        "connections",
+        "connections_in",
+        "connections_out",
+        "timeoffset",
+    ] {
+        if let Some(v) = map.get_mut(key) {
+            *v = json!(0);
+        }
+    }
+
+    // The user agent can carry operator-chosen `-uacomment`s that fingerprint
+    // the node; keep it a string so clients still deserialize it.
+    if let Some(subversion) = map.get_mut("subversion") {
+        *subversion = json!("");
+    }
+
+    info
+}
+
 #[tool_handler(router = self.tool_router)]
 impl ServerHandler for BitcoinRpcNostrServer {
     async fn call_tool(
@@ -376,7 +423,8 @@ impl ServerHandler for BitcoinRpcNostrServer {
 
 #[cfg(test)]
 mod tests {
-    use super::normalize_tool_name;
+    use super::{normalize_tool_name, redact_network_info};
+    use serde_json::json;
 
     #[test]
     fn normalizes_case_and_underscores() {
@@ -394,5 +442,64 @@ mod tests {
             normalize_tool_name("getblock"),
             normalize_tool_name("getblockheader")
         );
+    }
+
+    #[test]
+    fn redacts_identifying_network_info() {
+        let raw = json!({
+            "version": 270000,
+            "subversion": "/Satoshi:27.0.0/",
+            "protocolversion": 70016,
+            "localservices": "0000000000000c09",
+            "localservicesnames": ["NETWORK", "WITNESS", "NETWORK_LIMITED", "P2P_V2"],
+            "localrelay": true,
+            "timeoffset": -2,
+            "networkactive": true,
+            "connections": 42,
+            "connections_in": 32,
+            "connections_out": 10,
+            "networks": [
+                { "name": "ipv4", "limited": false, "reachable": true, "proxy": "127.0.0.1:9050", "proxy_randomize_credentials": true },
+                { "name": "onion", "limited": false, "reachable": true, "proxy": "127.0.0.1:9050", "proxy_randomize_credentials": true }
+            ],
+            "relayfee": 0.00001,
+            "incrementalfee": 0.00001,
+            "localaddresses": [
+                { "address": "203.0.113.7", "port": 8333, "score": 4 },
+                { "address": "exampleonionaddressexampleonionaddressexampleonionaddr.onion", "port": 8333, "score": 4 }
+            ],
+            "warnings": []
+        });
+
+        let redacted = redact_network_info(raw.clone());
+
+        assert_eq!(redacted["localaddresses"], json!([]));
+        for network in redacted["networks"].as_array().unwrap() {
+            assert_eq!(network["proxy"], json!(""));
+            assert_eq!(network["proxy_randomize_credentials"], json!(false));
+        }
+        for key in [
+            "connections",
+            "connections_in",
+            "connections_out",
+            "timeoffset",
+        ] {
+            assert_eq!(redacted[key], json!(0), "{key} not redacted");
+        }
+        assert_eq!(redacted["subversion"], json!(""));
+        for key in ["version", "relayfee", "incrementalfee", "localrelay"] {
+            assert_eq!(redacted[key], raw[key], "{key} changed");
+        }
+
+        let raw_keys: Vec<_> = raw.as_object().unwrap().keys().collect();
+        let redacted_keys: Vec<_> = redacted.as_object().unwrap().keys().collect();
+        assert_eq!(raw_keys, redacted_keys);
+    }
+
+    #[test]
+    fn redaction_does_not_add_missing_keys() {
+        // Pre-0.21 nodes don't report connections_in / connections_out.
+        let redacted = redact_network_info(json!({ "version": 200000, "connections": 8 }));
+        assert_eq!(redacted, json!({ "version": 200000, "connections": 0 }));
     }
 }

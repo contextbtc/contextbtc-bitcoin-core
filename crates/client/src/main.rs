@@ -95,13 +95,13 @@ async fn run(server_pubkey: String) -> anyhow::Result<()> {
     }))?;
 
     let result = client
-        .call_tool(CallToolRequestParams::new("get_raw_mempool").with_arguments(arguments))
+        .call_tool(CallToolRequestParams::new("get_network_info").with_arguments(arguments))
         .await?;
 
     if let Some(content) = result.content.first()
         && let rmcp::model::RawContent::Text(text) = &content.raw
     {
-        println!("Raw mempool: {}", text.text);
+        println!("Network info: {}", text.text);
     }
 
     client.cancel().await?;
