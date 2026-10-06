@@ -74,11 +74,16 @@ async fn run(server_pubkey: String) -> anyhow::Result<()> {
         .call_tool(CallToolRequestParams::new("getblockchaininfo"))
         .await?;
 
+    let mut best_block_hash = None;
     if let Some(content) = result.content.first()
         && let rmcp::model::RawContent::Text(text) = &content.raw
     {
         println!("Blockchain info: {}", text.text);
+        let info: serde_json::Value = serde_json::from_str(&text.text)?;
+        best_block_hash = info["bestblockhash"].as_str().map(String::from);
     }
+    let best_block_hash = best_block_hash
+        .ok_or_else(|| anyhow::anyhow!("getblockchaininfo returned no bestblockhash"))?;
 
     let result = client
         .call_tool(CallToolRequestParams::new("getblockcount"))
@@ -102,6 +107,21 @@ async fn run(server_pubkey: String) -> anyhow::Result<()> {
         && let rmcp::model::RawContent::Text(text) = &content.raw
     {
         println!("Network info: {}", text.text);
+    }
+
+    let arguments = serde_json::from_value(serde_json::json!({
+        "blockhash": best_block_hash,
+        "verbosity": null
+    }))?;
+
+    let result = client
+        .call_tool(CallToolRequestParams::new("get_block").with_arguments(arguments))
+        .await?;
+
+    if let Some(content) = result.content.first()
+        && let rmcp::model::RawContent::Text(text) = &content.raw
+    {
+        println!("Block: {}", text.text);
     }
 
     client.cancel().await?;

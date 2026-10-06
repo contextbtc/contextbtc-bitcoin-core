@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ContextBTC Web Client</title>
+    <style>
+      :root {
+        --bg: #ffffff;
+        --fg: #1a1a1a;
+        --muted: #666;
+        --border: #ccc;
+        --panel: #f5f5f5;
+        --error: #c0392b;
+        --ok: #1e8449;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #161616;
+          --fg: #e6e6e6;
+          --muted: #999;
+          --border: #444;
+          --panel: #222;
+          --error: #ff6b5b;
+          --ok: #58d68d;
+        }
+      }
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font: 14px/1.4 system-ui, sans-serif;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 16px;
+      }
+      fieldset {
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        margin-bottom: 16px;
+      }
+      label {
+        display: block;
+        margin: 6px 0 2px;
+        color: var(--muted);
+      }
+      input,
+      select,
+      textarea,
+      button {
+        font: inherit;
+        color: inherit;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 6px;
+        box-sizing: border-box;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+      }
+      textarea {
+        font-family: ui-monospace, monospace;
+        min-height: 90px;
+      }
+      button {
+        cursor: pointer;
+        margin: 8px 4px 0 0;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      pre {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 8px;
+        overflow: auto;
+        max-height: 60vh;
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .error {
+        color: var(--error);
+      }
+      .ok {
+        color: var(--ok);
+      }
+      code {
+        word-break: break-all;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>ContextBTC Web Client</h1>
+    <p class="muted">Manual testing client for <code>contextbtc-server</code> over ContextVM/Nostr.</p>
+
+    <fieldset>
+      <legend>Connection</legend>
+      <label for="relays">Relay URLs (comma-separated)</label>
+      <input id="relays" value="ws://localhost:10547" />
+      <label for="server">Server pubkey (hex, npub or nprofile)</label>
+      <input id="server" placeholder="server public key" />
+      <label for="sk">Client secret key (hex or nsec; blank = generate and remember)</label>
+      <input id="sk" type="password" autocomplete="off" />
+      <button id="connect">Connect</button>
+      <button id="disconnect" disabled>Disconnect</button>
+      <p id="status" class="muted">Disconnected.</p>
+    </fieldset>
+
+    <fieldset id="tools-panel" disabled>
+      <legend>Tools</legend>
+      <div>
+        <button data-quick="getblockchaininfo">getblockchaininfo</button>
+        <button data-quick="getblockcount">getblockcount</button>
+        <button data-quick="getnetworkinfo">getnetworkinfo</button>
+      </div>
+      <label for="tool">Tool</label>
+      <select id="tool"></select>
+      <p id="tool-desc" class="muted"></p>
+      <label for="args">Arguments (JSON)</label>
+      <textarea id="args">{}</textarea>
+      <button id="call">Call tool</button>
+    </fieldset>
+
+    <h2>Result <span id="result-meta" class="muted"></span></h2>
+    <pre id="result" class="muted">No calls yet.</pre>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
