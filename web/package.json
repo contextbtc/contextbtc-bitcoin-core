@@ -1,0 +1,19 @@
+{
+  "name": "contextbtc-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun ./index.html",
+    "build": "bun build ./index.html --outdir dist",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@contextvm/sdk": "^0.14.3",
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "nostr-tools": "^2.25.2"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.2",
+    "typescript": "^7.0.2"
+  }
+}

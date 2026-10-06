@@ -100,6 +100,8 @@
             # bitcoind for the e2e integration tests (corepc-node finds it via
             # BITCOIND_EXE below). nak provides the local relay (`nak serve`).
             pkgs.bitcoind
+            # Package manager, dev server and bundler for the web client in `web/`.
+            pkgs.bun
           ];
 
           env = {

@@ -92,6 +92,28 @@ CLIENT_NOSTR_SECRET_KEY=
 cargo run -p contextbtc-client -- <server-pub-key-hex>
 ```
 
+## Web client (manual testing)
+
+`web/` is a single-page browser client built on the TypeScript
+[ContextVM SDK](https://github.com/ContextVM/sdk). It lists the server's tools and
+lets you call any of them with JSON arguments. It is meant for manual testing
+from a browser. [Bun](https://bun.sh), which the dev shell provides, serves and
+bundles it:
+
+```bash
+cd web
+bun install
+bun run dev   # open the URL bun prints (http://localhost:3000)
+```
+
+With a relay (`nak serve`) and the server running, paste the server's public key
+and click **Connect**. If the client secret key field is left blank, a key is
+generated and kept in the browser's `localStorage`. That keeps the client pubkey
+(shown after connecting) stable, so you can add it to `ALLOWED_CLIENT_PUBKEYS`.
+
+`bun run check` type-checks the client and `bun run build` writes a static bundle
+to `web/dist/`.
+
 ## Testing
 
 ```bash
