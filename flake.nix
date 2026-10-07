@@ -55,8 +55,9 @@
             darwin.apple_sdk.frameworks.SystemConfiguration
           ];
 
-        # The compiled workspace. Produces both binaries in $out/bin:
-        # `contextbtc-server` and `contextbtc-client`.
+        # The compiled workspace. Produces the binaries in $out/bin:
+        # `contextbtc-server`, `contextbtc-electrs-server`, `contextbtc-client`
+        # and `contextbtc-electrum-client-cli`.
         contextbtc = pkgs.rustPlatform.buildRustPackage {
           pname = "contextbtc";
           version = "0.1.0";
@@ -85,9 +86,17 @@
             type = "app";
             program = "${contextbtc}/bin/contextbtc-server";
           };
+          electrs-server = {
+            type = "app";
+            program = "${contextbtc}/bin/contextbtc-electrs-server";
+          };
           client = {
             type = "app";
             program = "${contextbtc}/bin/contextbtc-client";
+          };
+          electrum-cli = {
+            type = "app";
+            program = "${contextbtc}/bin/contextbtc-electrum-client-cli";
           };
         };
 
@@ -108,6 +117,7 @@
             RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/rust/library";
             # corepc-node resolves the bitcoind binary from this first.
             BITCOIND_EXE = "${pkgs.bitcoind}/bin/bitcoind";
+            ELECTRS_EXE = "${pkgs.electrs}/bin/electrs";
           };
 
           shellHook = ''

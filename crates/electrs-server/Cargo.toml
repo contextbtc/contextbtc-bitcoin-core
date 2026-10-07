@@ -1,5 +1,5 @@
 [package]
-name = "contextbtc-server"
+name = "contextbtc-electrs-server"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -14,5 +14,5 @@ tokio.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
 dotenvy.workspace = true
-reqwest.workspace = true
 backon.workspace = true
+sha2 = "0.10"

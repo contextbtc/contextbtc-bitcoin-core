@@ -33,6 +33,12 @@ serde_json.workspace = true
 bdk_bitcoind_rpc = "0.22.0"
 bdk_chain = "0.23.3"
 
+# `bdk_electrum`, also unmodified. Its `BdkElectrumClient` is generic over
+# `electrum_client::ElectrumApi`, which `contextbtc-electrum-client` implements
+# over MCP-over-Nostr, so no patching is involved.
+bdk_electrum = "0.24.0"
+contextbtc-electrum-client = { path = "../electrum-client-nostr" }
+
 # Resolves to `crates/bitcoincore-rpc-client` via the root `[patch.crates-io]`.
 bitcoincore-rpc = "0.19.0"
 
