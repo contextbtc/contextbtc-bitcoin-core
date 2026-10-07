@@ -210,6 +210,15 @@ impl Stack {
     /// Start the whole stack. `extra_bitcoind_args` are appended to the default
     /// regtest arguments (e.g. `-blockfilterindex=1`).
     pub fn start(extra_bitcoind_args: &[&str]) -> anyhow::Result<Self> {
+        Self::start_with_server_env(extra_bitcoind_args, &[])
+    }
+
+    /// Like [`start`](Self::start), also passing `extra_server_env` to
+    /// `contextbtc-server` (e.g. `ENABLED_TOOLS`).
+    pub fn start_with_server_env(
+        extra_bitcoind_args: &[&str],
+        extra_server_env: &[(&str, &str)],
+    ) -> anyhow::Result<Self> {
         let (relay_url, relay_guard) = start_relay()?;
         let node = start_node(extra_bitcoind_args, corepc_node::P2P::No)?;
 
@@ -218,15 +227,14 @@ impl Stack {
             .params
             .get_cookie_values()?
             .expect("regtest node should expose cookie credentials");
-        let (server_pubkey, server_guard) = start_server(
-            "contextbtc-server",
-            &relay_url,
-            &[
-                ("BITCOIN_RPC_URL", &rpc_url),
-                ("BITCOIN_RPC_USER", &cookie.user),
-                ("BITCOIN_RPC_PASSWORD", &cookie.password),
-            ],
-        )?;
+        let mut server_env = vec![
+            ("BITCOIN_RPC_URL", rpc_url.as_str()),
+            ("BITCOIN_RPC_USER", cookie.user.as_str()),
+            ("BITCOIN_RPC_PASSWORD", cookie.password.as_str()),
+        ];
+        server_env.extend_from_slice(extra_server_env);
+        let (server_pubkey, server_guard) =
+            start_server("contextbtc-server", &relay_url, &server_env)?;
 
         Ok(Self {
             relay_url,

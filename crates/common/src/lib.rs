@@ -6,7 +6,7 @@ use contextvm_sdk::signer;
 use contextvm_sdk::transport::server::{NostrServerTransport, NostrServerTransportConfig};
 
 /// Read a comma-separated env var into a list, dropping blanks.
-fn list_from_env(var: &str) -> Vec<String> {
+pub fn list_from_env(var: &str) -> Vec<String> {
     std::env::var(var)
         .unwrap_or_default()
         .split(',')

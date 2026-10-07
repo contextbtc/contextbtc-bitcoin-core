@@ -158,6 +158,16 @@
               description = "Nostr relay websocket URLs (sets NOSTR_RELAY_URLS).";
             };
 
+            enabledTools = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
+              example = [ "bdk" "fees" ];
+              description = ''
+                Tool names and/or groups to expose (sets ENABLED_TOOLS). Empty
+                exposes every tool.
+              '';
+            };
+
             extraEnvironment = lib.mkOption {
               type = lib.types.attrsOf lib.types.str;
               default = { };
@@ -189,6 +199,9 @@
 
               environment = {
                 NOSTR_RELAY_URLS = lib.concatStringsSep "," cfg.relayUrls;
+              }
+              // lib.optionalAttrs (cfg.enabledTools != [ ]) {
+                ENABLED_TOOLS = lib.concatStringsSep "," cfg.enabledTools;
               }
               // cfg.extraEnvironment;
 

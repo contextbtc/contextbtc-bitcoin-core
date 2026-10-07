@@ -40,6 +40,32 @@ not an error (useful for systemd/Docker where variables are injected directly).
 | `BITCOIN_RPC_USER` | Yes | — | JSON-RPC username. |
 | `BITCOIN_RPC_PASSWORD` | Yes | — | JSON-RPC password. |
 | `BITCOIN_RPC_TIMEOUT_SECS` | No | `30` | Overall HTTP request timeout for RPC calls, in seconds. |
+| `ENABLED_TOOLS` | No | all tools | Comma-separated allowlist of tool names and/or groups to expose. See [Choosing which tools to expose](#choosing-which-tools-to-expose). |
+
+### Choosing which tools to expose
+
+By default the server exposes every tool. To expose only what your use case
+needs, set `ENABLED_TOOLS` to a comma-separated list of tool names and/or these
+groups:
+
+| Group | Tools |
+| --- | --- |
+| `bdk` | `getblockchaininfo`, `getnetworkinfo`, `getblock`, `getblock_verbose`, `getblockcount`, `getblockhash`, `getblockheader`, `getblockheader_hex`, `getblockfilter`, `getrawmempool`, `getrawtransaction` (what `bdk_bitcoind_rpc` needs) |
+| `blockchain` | `getbestblockhash`, `getdifficulty`, `getchaintips`, `getchaintxstats`, `getblockstats`, `getdeploymentinfo`, `gettxout`, `gettxoutproof`, `verifytxoutproof`, `gettxspendingprevout` |
+| `mempool` | `getmempoolinfo`, `getmempoolentry`, `getmempoolancestors`, `getmempooldescendants` |
+| `fees` | `estimatesmartfee` |
+| `transactions` | `decoderawtransaction`, `decodescript`, `decodepsbt`, `analyzepsbt`, `createrawtransaction`, `createpsbt`, `combinepsbt`, `joinpsbts`, `finalizepsbt`, `converttopsbt`, `utxoupdatepsbt` |
+| `util` | `validateaddress`, `getdescriptorinfo`, `deriveaddresses`, `verifymessage`, `createmultisig`, `getindexinfo` |
+| `mining` | `getmininginfo`, `getnetworkhashps` |
+| `all` | every tool |
+
+```sh
+ENABLED_TOOLS=bdk,fees,decodepsbt,analyzepsbt
+```
+
+Names are matched ignoring case and underscores (`get_block_hash` works). An
+unknown name stops the server at startup. Tools left out are neither listed
+nor callable.
 
 ## Project layout
 
