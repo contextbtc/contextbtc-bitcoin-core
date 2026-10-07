@@ -483,6 +483,46 @@ fn rpc_params(cmd: &str) -> Option<&'static [&'static str]> {
         "getblockfilter" => &["blockhash", "filtertype"],
         "getrawmempool" => &["verbose"],
         "getrawtransaction" => &["txid", "verbosity", "blockhash"],
+        // Blockchain
+        "getbestblockhash" => &[],
+        "getdifficulty" => &[],
+        "getchaintips" => &[],
+        "getchaintxstats" => &["nblocks", "blockhash"],
+        "getblockstats" => &["hash_or_height", "stats"],
+        "getdeploymentinfo" => &["blockhash"],
+        "gettxout" => &["txid", "n", "include_mempool"],
+        "gettxoutproof" => &["txids", "blockhash"],
+        "verifytxoutproof" => &["proof"],
+        "gettxspendingprevout" => &["outputs"],
+        // Mempool
+        "getmempoolinfo" => &[],
+        "getmempoolentry" => &["txid"],
+        "getmempoolancestors" => &["txid", "verbose"],
+        "getmempooldescendants" => &["txid", "verbose"],
+        // Fees
+        "estimatesmartfee" => &["conf_target", "estimate_mode"],
+        // Transactions & PSBTs
+        "decoderawtransaction" => &["hexstring", "iswitness"],
+        "decodescript" => &["hexstring"],
+        "decodepsbt" => &["psbt"],
+        "analyzepsbt" => &["psbt"],
+        "createrawtransaction" => &["inputs", "outputs", "locktime", "replaceable"],
+        "createpsbt" => &["inputs", "outputs", "locktime", "replaceable"],
+        "combinepsbt" => &["txs"],
+        "joinpsbts" => &["txs"],
+        "finalizepsbt" => &["psbt", "extract"],
+        "converttopsbt" => &["hexstring", "permitsigdata", "iswitness"],
+        "utxoupdatepsbt" => &["psbt", "descriptors"],
+        // Util
+        "validateaddress" => &["address"],
+        "getdescriptorinfo" => &["descriptor"],
+        "deriveaddresses" => &["descriptor", "range"],
+        "verifymessage" => &["address", "signature", "message"],
+        "createmultisig" => &["nrequired", "keys", "address_type"],
+        "getindexinfo" => &["index_name"],
+        // Mining
+        "getmininginfo" => &[],
+        "getnetworkhashps" => &["nblocks", "height"],
         _ => return None,
     };
     Some(params)
