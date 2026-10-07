@@ -1,7 +1,11 @@
 [workspace]
 resolver = "2"
 members = [
+    "crates/common",
     "crates/server",
+    "crates/electrs-server",
+    "crates/electrum-client-nostr",
+    "crates/electrum-client-cli",
     "crates/client",
     "crates/e2e",
 ]
@@ -33,3 +37,5 @@ serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.150"
 reqwest = { version = "0.12", features = ["json"] }
 backon = "1.6.0"
+futures = "0.3"
+clap = { version = "4.5", features = ["derive", "env"] }

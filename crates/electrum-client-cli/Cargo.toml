@@ -1,0 +1,17 @@
+[package]
+name = "contextbtc-electrum-client-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+clap.workspace = true
+contextbtc-electrum-client = { path = "../electrum-client-nostr" }
+dotenvy.workspace = true
+# `RUST_LOG=contextbtc_electrum_client=debug` prints every MCP tools/call.
+env_logger = "0.11"
+
+# For `scan`: an unmodified bdk_electrum full scan through the Nostr client.
+bdk_chain = "0.23.3"
+bdk_electrum = "0.24.0"
