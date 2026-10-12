@@ -14,4 +14,10 @@ env_logger = "0.11"
 
 # For `scan`: an unmodified bdk_electrum full scan through the Nostr client.
 bdk_chain = "0.23.3"
-bdk_electrum = "0.24.0"
+# No TLS features: the scan goes through the Nostr client, never electrum-client's
+# own TLS. The defaults enable rustls' aws-lc-rs provider, and so does
+# `use-rustls-ring` (electrum-client 0.25 turns its `rustls` feature on too).
+# A workspace build unifies features, so aws-lc-rs next to the ring provider the
+# Nostr websocket stack uses makes rustls panic at runtime: it cannot pick a
+# crypto provider.
+bdk_electrum = { version = "0.24.0", default-features = false }
