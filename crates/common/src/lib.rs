@@ -48,12 +48,24 @@ pub fn server_keys_from_env() -> anyhow::Result<signer::Keys> {
     }
 }
 
+/// Select ring as rustls' process-wide crypto provider.
+///
+/// rustls panics on the first TLS connection if its features enable more than
+/// one provider and none was installed. That happens whenever a dependency
+/// turns on aws-lc-rs in a workspace build, so pick one explicitly. Errors
+/// mean a provider is already installed, which is fine.
+fn install_crypto_provider() {
+    let _ = rustls::crypto::ring::default_provider().install_default();
+}
+
 /// Build the server's Nostr transport from the environment and print its
 /// public key (`Public key: <hex>`; the e2e harness parses this line).
 ///
 /// The server is not announced on relays, so only clients that already know
 /// its public key can reach it, and only those on the allowlist are served.
 pub async fn server_transport_from_env() -> anyhow::Result<NostrServerTransport> {
+    install_crypto_provider();
+
     let keys = server_keys_from_env()?;
     println!("Public key: {}", keys.public_key().to_hex());
 
@@ -62,6 +74,10 @@ pub async fn server_transport_from_env() -> anyhow::Result<NostrServerTransport>
         NostrServerTransportConfig::default()
             .with_relay_urls(relay_urls_from_env())
             .with_announced_server(false)
+            // The SDK publishes a signed relay list (kind 10002) to public
+            // bootstrap relays even for unannounced servers. That would tie
+            // the server's key to its relay publicly, so turn it off.
+            .with_publish_relay_list(false)
             .with_allowed_public_keys(allowed_pubkeys_from_env()),
     )
     .await?;

@@ -8,3 +8,6 @@ publish = false
 [dependencies]
 anyhow.workspace = true
 contextvm-sdk.workspace = true
+# Only to install ring as the process-wide crypto provider; the version and
+# feature match what the Nostr websocket stack already pulls in.
+rustls = { version = "0.23", default-features = false, features = ["ring"] }
