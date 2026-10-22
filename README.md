@@ -401,6 +401,9 @@ This project bridges two distinct protocol layers:
 - **ContexVM Electrum MCP server ⟷ electrs:** Electrum protocol (newline-delimited
   JSON-RPC) over TCP.
 
+See [ARCHITECTURE.md](ARCHITECTURE.md) for the crate map, how a request flows,
+the `bitcoincore-rpc` transport swap, and the security model.
+
 ## License
 
 Licensed under either of [Apache License, Version 2.0](LICENSE-APACHE) or
